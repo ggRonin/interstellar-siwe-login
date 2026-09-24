@@ -6,7 +6,6 @@ Sign-In With Ethereum (nonce -> personal_sign -> verify), exactly mirroring
 the flow captured from the live site's network tab.
 """
 
-import json
 import sys
 from datetime import datetime, timedelta, timezone
 
@@ -150,45 +149,3 @@ class SiweSession:
             "created": result.get("created"),
             "cookies": self.session.cookies.get_dict(),
         }
-
-
-def load_first_wallet(boost_file: str = config.BOOST_FILE) -> dict:
-    """Read the first wallet entry from Boost.txt (JSON-lines format)."""
-    with open(boost_file, "r", encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if not line:
-                continue
-            return json.loads(line)
-    raise RuntimeError(f"No wallet entries found in {boost_file}")
-
-
-def main():
-    print("╔" + "═" * 60 + "╗")
-    print("║" + "  INTERSTELLAR SIWE LOGIN".center(60) + "║")
-    print("╚" + "═" * 60 + "╝")
-    print()
-
-    entry = load_first_wallet()
-    print(f"[*] Loaded first wallet from {config.BOOST_FILE}")
-
-    siwe = SiweSession(
-        seed_phrase=entry["seed_phrase"],
-        expected_address=entry.get("address"),
-        proxy=entry.get("proxy"),
-    )
-
-    try:
-        result = siwe.login()
-    except Exception as e:
-        print(f"[FATAL] Login failed: {e}")
-        sys.exit(1)
-
-    print()
-    print("[*] Session cookies (reusable for authenticated /api/v1 calls):")
-    for k, v in result["cookies"].items():
-        print(f"    {k} = {v}")
-
-
-if __name__ == "__main__":
-    main()

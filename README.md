@@ -1,63 +1,63 @@
 # interstellar-siwe-login
 
-Automates wallet sign-in ("Sign-In With Ethereum") for [interstellar.dachain.io](https://interstellar.dachain.io) — the DAC Quantum Chain mainnet launch portal.
+Автоматизация входа через кошелёк ("Sign-In With Ethereum") на [interstellar.dachain.io](https://interstellar.dachain.io) — портале запуска мейннета DAC Quantum Chain.
 
-It reproduces the exact flow the site's own frontend does in the browser:
+Скрипт повторяет ровно тот же флоу, что делает фронтенд сайта в браузере:
 
-1. `POST /api/v1/auth/siwe/nonce/` — get a nonce for a wallet address
-2. Build and sign the SIWE message locally with the wallet's private key (derived from its seed phrase)
-3. `POST /api/v1/auth/siwe/` — submit the signed message, get back a session
+1. `POST /api/v1/auth/siwe/nonce/` — получить nonce для адреса кошелька
+2. Собрать SIWE-сообщение и подписать его локально приватным ключом (полученным из seed-фразы кошелька)
+3. `POST /api/v1/auth/siwe/` — отправить подписанное сообщение и получить сессию
 
-No browser, no wallet extension — pure HTTP + local signing.
+Без браузера и расширений-кошельков — чистый HTTP-запрос + локальная подпись.
 
-## Features
+## Возможности
 
-- Single-wallet login (`siwe_login.py`) or bulk login for a whole list of wallets (`mass_login.py`, 20 parallel workers by default)
-- Every request goes through a proxy — there is no direct-connection fallback
-- If a wallet's assigned proxy is dead, a fresh one is pulled from the spare pool and the wallet's assignment is updated, so it never gets reassigned
-- Resumable: already-logged-in wallets are skipped on re-run
+- Вход одним кошельком (`siwe_login.py`) или массово по всему списку (`mass_login.py`, 20 параллельных потоков по умолчанию)
+- Каждый запрос идёт только через прокси — прямого подключения без прокси нет вообще
+- Если прокси, назначенный кошельку, не работает, берётся свежий из запасного пула, а назначение кошелька обновляется, чтобы этот прокси больше никому не достался
+- Резюмируемость: уже залогиненные кошельки пропускаются при повторном запуске
 
-## Setup
+## Установка
 
 ```bash
 pip install -r requirements.txt
 ```
 
-Copy the example data files and fill them with your own wallets/proxies:
+Скопируй файлы-примеры и заполни своими кошельками/прокси:
 
 ```bash
 cp Boost.example.txt Boost.txt
 cp Proxy.example.txt Proxy.txt
 ```
 
-**`Boost.txt`** — one JSON object per line, one per wallet:
+**`Boost.txt`** — по одному JSON-объекту на строку, один объект на кошелёк:
 
 ```json
 {"address": "0x...", "proxy": "user:pass@host:port", "seed_phrase": "your twelve or twenty-four word mnemonic", "dacc_gained": 0, "timestamp": 0}
 ```
 
-Only `proxy` and `seed_phrase` are actually used; the other fields are ignored (kept for compatibility with farming tools that produce this format).
+Реально используются только `proxy` и `seed_phrase`, остальные поля игнорируются (оставлены для совместимости с фарм-тулзами, которые генерируют такой формат).
 
-**`Proxy.txt`** — one `user:pass@host:port` proxy per line. This is the spare pool used to replace any dead proxy found in `Boost.txt`.
+**`Proxy.txt`** — по одному прокси `user:pass@host:port` на строку. Это запасной пул для замены нерабочих прокси из `Boost.txt`.
 
-> `Boost.txt`, `Proxy.txt` and the generated result/log files are gitignored — your seed phrases and proxy credentials never get committed.
+> `Boost.txt`, `Proxy.txt` и файлы результатов/логов добавлены в `.gitignore` — твои seed-фразы и данные прокси никогда не попадут в коммит.
 
-## Usage
+## Использование
 
-**Log in a single wallet** (the first line of `Boost.txt`):
+**Залогинить один кошелёк** (первая строка `Boost.txt`):
 
 ```bash
 python siwe_login.py
 ```
 
-**Log in every wallet in `Boost.txt`**, 20 at a time:
+**Залогинить все кошельки из `Boost.txt`**, по 20 за раз:
 
 ```bash
 python mass_login.py
 ```
 
-Progress is written to `login_results.jsonl` as it goes (one JSON line per wallet: `ok`, `address`, `user_id`, `status`, `created`, `proxy`). If the run is interrupted, just run it again — wallets already marked `ok` are skipped.
+Прогресс пишется в `login_results.jsonl` по ходу выполнения (одна JSON-строка на кошелёк: `ok`, `address`, `user_id`, `status`, `created`, `proxy`). Если запуск прервался — просто запусти скрипт заново, уже готовые (`ok`) кошельки пропустятся автоматически.
 
-## Configuration
+## Настройка
 
-All endpoints, headers and tunables (thread count, timeouts, max proxy retries per wallet) live in `config.py`.
+Все эндпоинты, заголовки и параметры (число потоков, таймауты, максимум попыток смены прокси на кошелёк) находятся в `config.py`.

@@ -1,0 +1,3 @@
+user:pass@proxy.example.com:10000
+user:pass@proxy.example.com:10001
+user:pass@proxy.example.com:10002

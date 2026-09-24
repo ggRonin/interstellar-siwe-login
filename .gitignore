@@ -1,0 +1,14 @@
+# Real wallet/proxy data — never commit these (seed phrases = private keys)
+Boost.txt
+Proxy.txt
+login_results.jsonl
+mass_login.log
+*.jsonl
+*.log
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/

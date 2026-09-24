@@ -1,0 +1,2 @@
+{"address": "0x0000000000000000000000000000000000dEaD", "proxy": "user1:pass1@proxy.example.com:10000", "seed_phrase": "test test test test test test test test test test test junk", "dacc_gained": 0, "timestamp": 0}
+{"address": "0x000000000000000000000000000000DeaDBeef", "proxy": "user2:pass2@proxy.example.com:10001", "seed_phrase": "test test test test test test test test test test test junk", "dacc_gained": 0, "timestamp": 0}
